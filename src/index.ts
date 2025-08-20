@@ -53,13 +53,49 @@ const handlerReset = (req: Request, res: Response) => {
   res.send();
 };
 
+const handlerValidateChrip = (req: Request, res: Response) => {
+  let body = "";
+
+  req.on("data", (chunk) => {
+    body += chunk;
+  });
+
+  req.on("end", () => {
+    try {
+      const parsedBody = JSON.parse(body);
+
+      if (parsedBody.body === undefined) {
+        throw new Error("Something went wrong");
+      }
+
+      if (parsedBody.body.length > 140) {
+        throw new Error("Chirp is too long");
+      }
+
+      res.status(200);
+      res.send({
+        valid: true,
+      });
+    } catch (err: unknown) {
+      res.status(400);
+      res.send({
+        error: err instanceof Error ? err.message : err,
+      });
+    }
+  });
+};
+
 app.use([middlewareLogResponses]);
 
 app.use("/app", middlewareMetricsInc, express.static("./src/app"));
 
 app.get("/api/healthz", handlerReadindess);
+
+app.post("/api/validate_chirp", handlerValidateChrip);
+
+// Admin Routes
 app.get("/admin/metrics", handlerMetrics);
-app.get("/admin/reset", handlerReset);
+app.post("/admin/reset", handlerReset);
 
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
