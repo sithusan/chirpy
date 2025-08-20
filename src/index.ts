@@ -37,7 +37,14 @@ const handlerReadindess = (req: Request, res: Response) => {
 
 const handlerMetrics = (req: Request, res: Response) => {
   res.status(200);
-  res.send(`Hits: ${config.fileserverHits}`);
+  res.set("Content-Type", "text/html; charset=utf-8");
+  res.send(`<html>
+      <body>
+        <h1>Welcome, Chirpy Admin</h1>
+        <p>Chirpy has been visited ${config.fileserverHits} times!</p>
+      </body>
+    </html>
+  `);
 };
 
 const handlerReset = (req: Request, res: Response) => {
@@ -50,9 +57,9 @@ app.use([middlewareLogResponses]);
 
 app.use("/app", middlewareMetricsInc, express.static("./src/app"));
 
-app.get("/healthz", handlerReadindess);
-app.get("/metrics", handlerMetrics);
-app.get("/reset", handlerReset);
+app.get("/api/healthz", handlerReadindess);
+app.get("/admin/metrics", handlerMetrics);
+app.get("/admin/reset", handlerReset);
 
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
