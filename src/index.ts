@@ -4,6 +4,21 @@ import { config } from "./config.js";
 const app = express();
 const PORT = 8080;
 
+const replaceProfanes = (text: string): string => {
+  const profanes = ["kerfuffle", "sharbert", "fornax"];
+
+  const splitted = text.split(" ");
+  const lowered = splitted.map((word) => word.toLocaleLowerCase());
+
+  for (let i = 0; i < lowered.length; i++) {
+    if (profanes.includes(lowered[i])) {
+      splitted[i] = "****";
+    }
+  }
+
+  return splitted.join(" ");
+};
+
 const middlewareLogResponses = (
   req: Request,
   res: Response,
@@ -71,7 +86,7 @@ const handlerValidateChrip = (req: Request, res: Response) => {
 
     res.status(200);
     res.send({
-      valid: true,
+      cleanedBody: replaceProfanes(params.body),
     });
   } catch (err: unknown) {
     res.status(400);
