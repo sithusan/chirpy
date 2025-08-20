@@ -54,38 +54,35 @@ const handlerReset = (req: Request, res: Response) => {
 };
 
 const handlerValidateChrip = (req: Request, res: Response) => {
-  let body = "";
+  type parameter = {
+    body: string;
+  };
 
-  req.on("data", (chunk) => {
-    body += chunk;
-  });
+  try {
+    const params: parameter = req.body;
 
-  req.on("end", () => {
-    try {
-      const parsedBody = JSON.parse(body);
-
-      if (parsedBody.body === undefined) {
-        throw new Error("Something went wrong");
-      }
-
-      if (parsedBody.body.length > 140) {
-        throw new Error("Chirp is too long");
-      }
-
-      res.status(200);
-      res.send({
-        valid: true,
-      });
-    } catch (err: unknown) {
-      res.status(400);
-      res.send({
-        error: err instanceof Error ? err.message : err,
-      });
+    if (params.body === undefined) {
+      throw new Error("Something went wrong");
     }
-  });
+
+    if (params.body.length > 140) {
+      throw new Error("Chirp is too long");
+    }
+
+    res.status(200);
+    res.send({
+      valid: true,
+    });
+  } catch (err: unknown) {
+    res.status(400);
+    res.send({
+      error: err instanceof Error ? err.message : err,
+    });
+  }
 };
 
 app.use([middlewareLogResponses]);
+app.use(express.json());
 
 app.use("/app", middlewareMetricsInc, express.static("./src/app"));
 
