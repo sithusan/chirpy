@@ -44,13 +44,13 @@ const middlewareMetricsInc = (
   next();
 };
 
-const handlerReadindess = (req: Request, res: Response) => {
+const handlerReadindess = async (req: Request, res: Response) => {
   res.set("Content-Type", "text/plain; charset=utf-8");
   res.status(200);
   res.send("OK");
 };
 
-const handlerMetrics = (req: Request, res: Response) => {
+const handlerMetrics = async (req: Request, res: Response) => {
   res.status(200);
   res.set("Content-Type", "text/html; charset=utf-8");
   res.send(`<html>
@@ -62,38 +62,44 @@ const handlerMetrics = (req: Request, res: Response) => {
   `);
 };
 
-const handlerReset = (req: Request, res: Response) => {
+const handlerReset = async (req: Request, res: Response) => {
   config.fileserverHits = 0;
   res.status(200);
   res.send();
 };
 
-const handlerValidateChrip = (req: Request, res: Response) => {
+const handlerValidateChrip = async (req: Request, res: Response) => {
   type parameter = {
     body: string;
   };
 
-  try {
-    const params: parameter = req.body;
+  const params: parameter = req.body;
 
-    if (params.body === undefined) {
-      throw new Error("Something went wrong");
-    }
-
-    if (params.body.length > 140) {
-      throw new Error("Chirp is too long");
-    }
-
-    res.status(200);
-    res.send({
-      cleanedBody: replaceProfanes(params.body),
-    });
-  } catch (err: unknown) {
-    res.status(400);
-    res.send({
-      error: err instanceof Error ? err.message : err,
-    });
+  if (params.body === undefined) {
+    throw new Error("Something went wrong");
   }
+
+  if (params.body.length > 140) {
+    throw new Error("Chirp is too long");
+  }
+
+  res.status(200);
+  res.send({
+    cleanedBody: replaceProfanes(params.body),
+  });
+};
+
+const errorHander = (
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log(err.message);
+  res.status(500);
+  res.json({
+    error: "Something went wrong on our end",
+  });
 };
 
 app.use([middlewareLogResponses]);
@@ -101,13 +107,25 @@ app.use(express.json());
 
 app.use("/app", middlewareMetricsInc, express.static("./src/app"));
 
-app.get("/api/healthz", handlerReadindess);
+app.get("/api/healthz", async (req, res) => {
+  await handlerReadindess(req, res);
+});
 
-app.post("/api/validate_chirp", handlerValidateChrip);
+app.post("/api/validate_chirp", async (req, res) => {
+  await handlerValidateChrip(req, res);
+});
 
 // Admin Routes
-app.get("/admin/metrics", handlerMetrics);
-app.post("/admin/reset", handlerReset);
+app.get("/admin/metrics", async (req, res) => {
+  await handlerMetrics(req, res);
+});
+app.post("/admin/reset", async (req, res) => {
+  await handlerReset(req, res);
+});
+
+// Error Handler Middleware needs to defined last.
+// If we don't have the error handler middleware, fallback to express build in handling.
+app.use(errorHander);
 
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
