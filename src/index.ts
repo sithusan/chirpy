@@ -1,5 +1,9 @@
 import express, { NextFunction, Request, Response } from "express";
 import { config } from "./config.js";
+import { BadRequestError } from "./errors/BadRequestError.js";
+import { ForbiddenError } from "./errors/ForbiddenError.js";
+import { NotFoundError } from "./errors/NotFoundError.js";
+import { UnauthorizedError } from "./errors/UnauthorizedError.js";
 
 const app = express();
 const PORT = 8080;
@@ -17,6 +21,13 @@ const replaceProfanes = (text: string): string => {
   }
 
   return splitted.join(" ");
+};
+
+const resposeError = (status: number, message: string, res: Response) => {
+  res.status(status);
+  res.json({
+    error: message,
+  });
 };
 
 const middlewareLogResponses = (
@@ -76,11 +87,11 @@ const handlerValidateChrip = async (req: Request, res: Response) => {
   const params: parameter = req.body;
 
   if (params.body === undefined) {
-    throw new Error("Something went wrong");
+    throw new BadRequestError("Body is required");
   }
 
   if (params.body.length > 140) {
-    throw new Error("Chirp is too long");
+    throw new BadRequestError("Chirp is too long. Max length is 140");
   }
 
   res.status(200);
@@ -96,10 +107,25 @@ const errorHander = (
   next: NextFunction
 ) => {
   console.log(err.message);
-  res.status(500);
-  res.json({
-    error: "Something went wrong on our end",
-  });
+
+  // Can be done with polymorphism.
+  if (err instanceof BadRequestError) {
+    resposeError(400, err.message, res);
+  }
+
+  if (err instanceof ForbiddenError) {
+    resposeError(403, err.message, res);
+  }
+
+  if (err instanceof NotFoundError) {
+    resposeError(404, err.message, res);
+  }
+
+  if (err instanceof UnauthorizedError) {
+    resposeError(401, err.message, res);
+  }
+
+  resposeError(500, "500 - Internal Server Errors", res);
 };
 
 app.use([middlewareLogResponses]);
