@@ -36,7 +36,7 @@ const middlewareLogResponses = (
   next: NextFunction
 ) => {
   res.on("finish", () => {
-    if (res.statusCode !== 200) {
+    if (res.statusCode >= 200) {
       console.log(
         `[NON-OK] ${req.method} ${req.url} - Status: ${res.statusCode}`
       );
@@ -111,21 +111,15 @@ const errorHander = (
   // Can be done with polymorphism.
   if (err instanceof BadRequestError) {
     resposeError(400, err.message, res);
-  }
-
-  if (err instanceof ForbiddenError) {
+  } else if (err instanceof ForbiddenError) {
     resposeError(403, err.message, res);
-  }
-
-  if (err instanceof NotFoundError) {
+  } else if (err instanceof NotFoundError) {
     resposeError(404, err.message, res);
-  }
-
-  if (err instanceof UnauthorizedError) {
+  } else if (err instanceof UnauthorizedError) {
     resposeError(401, err.message, res);
+  } else {
+    resposeError(500, "500 - Internal Server Errors", res);
   }
-
-  resposeError(500, "500 - Internal Server Errors", res);
 };
 
 app.use([middlewareLogResponses]);
