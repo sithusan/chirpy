@@ -5,6 +5,7 @@ import { ForbiddenError } from "./errors/ForbiddenError.js";
 import { NotFoundError } from "./errors/NotFoundError.js";
 import { UnauthorizedError } from "./errors/UnauthorizedError.js";
 import { migrate } from "./db/migrate.js";
+import { handlerCreateUser } from "./handlers/handlerCreateUser.js";
 
 migrate();
 
@@ -90,7 +91,7 @@ const handlerValidateChrip = async (req: Request, res: Response) => {
   const params: parameter = req.body;
 
   if (params.body === undefined) {
-    throw new BadRequestError("Body is required");
+    throw new BadRequestError("body is required");
   }
 
   if (params.body.length > 140) {
@@ -146,6 +147,10 @@ app.post("/admin/reset", async (req, res) => {
   await handlerReset(req, res);
 });
 
+// users
+app.post("/api/users", async (req, res) => {
+  await handlerCreateUser(req, res);
+});
 // Error Handler Middleware needs to defined last.
 // If we don't have the error handler middleware, fallback to express build in handling.
 app.use(errorHander);
