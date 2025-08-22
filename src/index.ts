@@ -4,9 +4,12 @@ import { BadRequestError } from "./errors/BadRequestError.js";
 import { ForbiddenError } from "./errors/ForbiddenError.js";
 import { NotFoundError } from "./errors/NotFoundError.js";
 import { UnauthorizedError } from "./errors/UnauthorizedError.js";
+import { migrate } from "./db/migrate.js";
+
+migrate();
 
 const app = express();
-const PORT = 8080;
+const PORT = config.api.port;
 
 const replaceProfanes = (text: string): string => {
   const profanes = ["kerfuffle", "sharbert", "fornax"];
@@ -51,7 +54,7 @@ const middlewareMetricsInc = (
   res: Response,
   next: NextFunction
 ) => {
-  config.fileserverHits++;
+  config.api.fileServerHits++;
   next();
 };
 
@@ -67,14 +70,14 @@ const handlerMetrics = async (req: Request, res: Response) => {
   res.send(`<html>
       <body>
         <h1>Welcome, Chirpy Admin</h1>
-        <p>Chirpy has been visited ${config.fileserverHits} times!</p>
+        <p>Chirpy has been visited ${config.api.fileServerHits} times!</p>
       </body>
     </html>
   `);
 };
 
 const handlerReset = async (req: Request, res: Response) => {
-  config.fileserverHits = 0;
+  config.api.fileServerHits = 0;
   res.status(200);
   res.send();
 };
