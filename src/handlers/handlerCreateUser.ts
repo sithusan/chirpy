@@ -12,6 +12,10 @@ export const handlerCreateUser = async (
 
   const params: parameter = req.body;
 
+  if (params === undefined) {
+    throw new BadRequestError("body is required");
+  }
+
   if (params.email === undefined) {
     throw new BadRequestError("email is required");
   }
@@ -30,8 +34,4 @@ export const handlerCreateUser = async (
 
   res.status(201);
   res.json(user);
-};
-
-export const test = () => {
-  return "hello world";
 };

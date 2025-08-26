@@ -6,26 +6,13 @@ import { NotFoundError } from "./errors/NotFoundError.js";
 import { UnauthorizedError } from "./errors/UnauthorizedError.js";
 import { migrate } from "./db/migrate.js";
 import { handlerCreateUser } from "./handlers/handlerCreateUser.js";
+import { handlerCreateChrip } from "./handlers/handerCreateChrip.js";
+import { truncateUsers } from "./db/queries/users.js";
 
 migrate();
 
 const app = express();
 const PORT = config.api.port;
-
-const replaceProfanes = (text: string): string => {
-  const profanes = ["kerfuffle", "sharbert", "fornax"];
-
-  const splitted = text.split(" ");
-  const lowered = splitted.map((word) => word.toLocaleLowerCase());
-
-  for (let i = 0; i < lowered.length; i++) {
-    if (profanes.includes(lowered[i])) {
-      splitted[i] = "****";
-    }
-  }
-
-  return splitted.join(" ");
-};
 
 const resposeError = (status: number, message: string, res: Response) => {
   res.status(status);
@@ -79,29 +66,10 @@ const handlerMetrics = async (req: Request, res: Response) => {
 
 const handlerReset = async (req: Request, res: Response) => {
   config.api.fileServerHits = 0;
+  await truncateUsers();
+
   res.status(200);
   res.send();
-};
-
-const handlerValidateChrip = async (req: Request, res: Response) => {
-  type parameter = {
-    body: string;
-  };
-
-  const params: parameter = req.body;
-
-  if (params.body === undefined) {
-    throw new BadRequestError("body is required");
-  }
-
-  if (params.body.length > 140) {
-    throw new BadRequestError("Chirp is too long. Max length is 140");
-  }
-
-  res.status(200);
-  res.send({
-    cleanedBody: replaceProfanes(params.body),
-  });
 };
 
 const errorHander = (
@@ -135,16 +103,17 @@ app.get("/api/healthz", async (req, res) => {
   await handlerReadindess(req, res);
 });
 
-app.post("/api/validate_chirp", async (req, res) => {
-  await handlerValidateChrip(req, res);
-});
-
 // Admin Routes
 app.get("/admin/metrics", async (req, res) => {
   await handlerMetrics(req, res);
 });
 app.post("/admin/reset", async (req, res) => {
   await handlerReset(req, res);
+});
+
+// chirps
+app.post("/api/chirps", async (req, res) => {
+  await handlerCreateChrip(req, res);
 });
 
 // users
