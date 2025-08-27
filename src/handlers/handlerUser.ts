@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { BadRequestError } from "./../errors/BadRequestError.js";
-import { createUser } from "./../db/queries/users.js";
+import { BadRequestError } from "../errors/BadRequestError.js";
+import { createUser } from "../db/queries/users.js";
 
 export const handlerCreateUser = async (
   req: Request,

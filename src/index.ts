@@ -5,7 +5,7 @@ import { ForbiddenError } from "./errors/ForbiddenError.js";
 import { NotFoundError } from "./errors/NotFoundError.js";
 import { UnauthorizedError } from "./errors/UnauthorizedError.js";
 import { migrate } from "./db/migrate.js";
-import { handlerCreateUser } from "./handlers/handlerCreateUser.js";
+import { handlerCreateUser } from "./handlers/handlerUser.js";
 import {
   handlerCreateChrip,
   handlerGetChirps,
