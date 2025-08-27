@@ -21,7 +21,7 @@ const replaceProfanes = (text: string): string => {
 
 export const handlerGetChirps = async (
   req: Request,
-  res: Response,
+  res: Response
 ): Promise<void> => {
   const chirps = await getChirps();
 
@@ -31,7 +31,7 @@ export const handlerGetChirps = async (
 
 export const handlerGetChirpBy = async (
   req: Request,
-  res: Response,
+  res: Response
 ): Promise<void> => {
   const id = req.params.id;
 
@@ -43,7 +43,7 @@ export const handlerGetChirpBy = async (
 
 export const handlerCreateChirp = async (
   req: Request,
-  res: Response,
+  res: Response
 ): Promise<void> => {
   type parameter = {
     body: string;
@@ -68,7 +68,7 @@ export const handlerCreateChirp = async (
     throw new BadRequestError("user id is required");
   }
 
-  const user = await findUserBy(params.userId);
+  const user = await findUserBy("id", params.userId);
 
   if (user === undefined) {
     throw new NotFoundError("user not found");

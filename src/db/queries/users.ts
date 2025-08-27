@@ -11,9 +11,12 @@ export const createUser = async (user: NewUser): Promise<User> => {
   return result;
 };
 
-export const findUserBy = async (id: string): Promise<User | undefined> => {
+export const findUserBy = async (
+  key: keyof User,
+  value: string
+): Promise<User | undefined> => {
   return await db.query.users.findFirst({
-    where: eq(users.id, id),
+    where: eq(users[key], value),
   });
 };
 

@@ -5,7 +5,7 @@ import { ForbiddenError } from "./errors/ForbiddenError.js";
 import { NotFoundError } from "./errors/NotFoundError.js";
 import { UnauthorizedError } from "./errors/UnauthorizedError.js";
 import { migrate } from "./db/migrate.js";
-import { handlerCreateUser } from "./handlers/handlerUser.js";
+import { handlerCreateUser, handlerLogin } from "./handlers/handlerUser.js";
 import {
   handlerCreateChirp,
   handlerGetChirps,
@@ -28,12 +28,12 @@ const resposeError = (status: number, message: string, res: Response) => {
 const middlewareLogResponses = (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   res.on("finish", () => {
-    if (res.statusCode >= 200) {
+    if (res.statusCode >= 400) {
       console.log(
-        `[NON-OK] ${req.method} ${req.url} - Status: ${res.statusCode}`,
+        `[NON-OK] ${req.method} ${req.url} - Status: ${res.statusCode}`
       );
     }
   });
@@ -44,7 +44,7 @@ const middlewareLogResponses = (
 const middlewareMetricsInc = (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   config.api.fileServerHits++;
   next();
@@ -80,7 +80,7 @@ const errorHander = (
   err: Error,
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   console.log(err.message);
 
@@ -129,6 +129,9 @@ app.post("/api/chirps", async (req, res) => {
 // users
 app.post("/api/users", async (req, res) => {
   await handlerCreateUser(req, res);
+});
+app.post("/api/login", async (req, res) => {
+  await handlerLogin(req, res);
 });
 // Error Handler Middleware needs to defined last.
 // If we don't have the error handler middleware, fallback to express build in handling.
