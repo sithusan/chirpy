@@ -7,9 +7,10 @@ import { UnauthorizedError } from "./errors/UnauthorizedError.js";
 import { migrate } from "./db/migrate.js";
 import { handlerCreateUser } from "./handlers/handlerUser.js";
 import {
-  handlerCreateChrip,
+  handlerCreateChirp,
   handlerGetChirps,
-} from "./handlers/handerChrip.js";
+  handlerGetChirpBy,
+} from "./handlers/handerChirp.js";
 import { truncateUsers } from "./db/queries/users.js";
 
 migrate();
@@ -27,12 +28,12 @@ const resposeError = (status: number, message: string, res: Response) => {
 const middlewareLogResponses = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   res.on("finish", () => {
     if (res.statusCode >= 200) {
       console.log(
-        `[NON-OK] ${req.method} ${req.url} - Status: ${res.statusCode}`
+        `[NON-OK] ${req.method} ${req.url} - Status: ${res.statusCode}`,
       );
     }
   });
@@ -43,7 +44,7 @@ const middlewareLogResponses = (
 const middlewareMetricsInc = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   config.api.fileServerHits++;
   next();
@@ -79,7 +80,7 @@ const errorHander = (
   err: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   console.log(err.message);
 
@@ -118,8 +119,11 @@ app.post("/admin/reset", async (req, res) => {
 app.get("/api/chirps", async (req, res) => {
   await handlerGetChirps(req, res);
 });
+app.get("/api/chirps/{:id}", async (req, res) => {
+  await handlerGetChirpBy(req, res);
+});
 app.post("/api/chirps", async (req, res) => {
-  await handlerCreateChrip(req, res);
+  await handlerCreateChirp(req, res);
 });
 
 // users

@@ -4,7 +4,7 @@ import { createUser } from "../db/queries/users.js";
 
 export const handlerCreateUser = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   type parameter = {
     email: string;

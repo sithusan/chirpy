@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { BadRequestError } from "../errors/BadRequestError.js";
 import { findUserBy } from "../db/queries/users.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
-import { createChrip, getChrips } from "../db/queries/chrips.js";
+import { createChirp, findChirpBy, getChirps } from "../db/queries/chirps.js";
 
 const replaceProfanes = (text: string): string => {
   const profanes = ["kerfuffle", "sharbert", "fornax"];
@@ -21,17 +21,29 @@ const replaceProfanes = (text: string): string => {
 
 export const handlerGetChirps = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
-  const chrips = await getChrips();
+  const chirps = await getChirps();
 
   res.status(200);
-  res.json(chrips);
+  res.json(chirps);
 };
 
-export const handlerCreateChrip = async (
+export const handlerGetChirpBy = async (
   req: Request,
-  res: Response
+  res: Response,
+): Promise<void> => {
+  const id = req.params.id;
+
+  const chirp = await findChirpBy(id);
+
+  res.status(200);
+  res.json(chirp);
+};
+
+export const handlerCreateChirp = async (
+  req: Request,
+  res: Response,
 ): Promise<void> => {
   type parameter = {
     body: string;
@@ -62,11 +74,11 @@ export const handlerCreateChrip = async (
     throw new NotFoundError("user not found");
   }
 
-  const chrip = await createChrip({
+  const chirp = await createChirp({
     body: replaceProfanes(params.body),
     userId: params.userId,
   });
 
   res.status(201);
-  res.json(chrip);
+  res.json(chirp);
 };
