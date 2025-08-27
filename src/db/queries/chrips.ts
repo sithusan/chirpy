@@ -10,3 +10,9 @@ export const createChrip = async (chrip: NewChrip): Promise<Chrip> => {
 
   return result;
 };
+
+export const getChrips = async (): Promise<Chrip[]> => {
+  return db.query.chirps.findMany({
+    orderBy: chirps.createdAt,
+  });
+};

@@ -6,7 +6,10 @@ import { NotFoundError } from "./errors/NotFoundError.js";
 import { UnauthorizedError } from "./errors/UnauthorizedError.js";
 import { migrate } from "./db/migrate.js";
 import { handlerCreateUser } from "./handlers/handlerCreateUser.js";
-import { handlerCreateChrip } from "./handlers/handerCreateChrip.js";
+import {
+  handlerCreateChrip,
+  handlerGetChirps,
+} from "./handlers/handerChrip.js";
 import { truncateUsers } from "./db/queries/users.js";
 
 migrate();
@@ -112,6 +115,9 @@ app.post("/admin/reset", async (req, res) => {
 });
 
 // chirps
+app.get("/api/chirps", async (req, res) => {
+  await handlerGetChirps(req, res);
+});
 app.post("/api/chirps", async (req, res) => {
   await handlerCreateChrip(req, res);
 });

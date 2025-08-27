@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { BadRequestError } from "./../errors/BadRequestError.js";
-import { findUserBy } from "./../db/queries/users.js";
-import { NotFoundError } from "./../errors/NotFoundError.js";
-import { createChrip } from "./../db/queries/chrips.js";
+import { BadRequestError } from "../errors/BadRequestError.js";
+import { findUserBy } from "../db/queries/users.js";
+import { NotFoundError } from "../errors/NotFoundError.js";
+import { createChrip, getChrips } from "../db/queries/chrips.js";
 
 const replaceProfanes = (text: string): string => {
   const profanes = ["kerfuffle", "sharbert", "fornax"];
@@ -17,6 +17,16 @@ const replaceProfanes = (text: string): string => {
   }
 
   return splitted.join(" ");
+};
+
+export const handlerGetChirps = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const chrips = await getChrips();
+
+  res.status(200);
+  res.json(chrips);
 };
 
 export const handlerCreateChrip = async (
