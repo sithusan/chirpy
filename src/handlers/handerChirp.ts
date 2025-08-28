@@ -3,6 +3,9 @@ import { BadRequestError } from "../errors/BadRequestError.js";
 import { findUserBy } from "../db/queries/users.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 import { createChirp, findChirpBy, getChirps } from "../db/queries/chirps.js";
+import { getBearerToken } from "./../auth.js";
+import { validateJWT } from "./../jwt.js";
+import { config } from "./../config.js";
 
 const replaceProfanes = (text: string): string => {
   const profanes = ["kerfuffle", "sharbert", "fornax"];
@@ -47,8 +50,10 @@ export const handlerCreateChirp = async (
 ): Promise<void> => {
   type parameter = {
     body: string;
-    userId: string;
   };
+
+  const token = getBearerToken(req);
+  const userId = validateJWT(token, config.api.secret);
 
   const params: parameter = req.body;
 
@@ -64,11 +69,7 @@ export const handlerCreateChirp = async (
     throw new BadRequestError("Chirp is too long. Max length is 140");
   }
 
-  if (params.userId === undefined) {
-    throw new BadRequestError("user id is required");
-  }
-
-  const user = await findUserBy("id", params.userId);
+  const user = await findUserBy("id", userId);
 
   if (user === undefined) {
     throw new NotFoundError("user not found");
@@ -76,7 +77,7 @@ export const handlerCreateChirp = async (
 
   const chirp = await createChirp({
     body: replaceProfanes(params.body),
-    userId: params.userId,
+    userId: userId,
   });
 
   res.status(201);

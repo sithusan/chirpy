@@ -5,12 +5,15 @@ import { checkPasswordHash, hashPassword } from "./../auth.js";
 import { User } from "./../db/schema.js";
 import { NotFoundError } from "./../errors/NotFoundError.js";
 import { UnauthorizedError } from "./../errors/UnauthorizedError.js";
+import { makeJWT } from "./../jwt.js";
+import { config } from "./../config.js";
 
 type UserResponse = Omit<User, "hashedPassword">;
 
 type parameter = {
   email: string;
   password: string;
+  expiresInSeconds?: number;
 };
 
 const validateParams = (params: parameter): void => {
@@ -80,10 +83,17 @@ export const handlerLogin = async (
     throw new UnauthorizedError("Incorrect email or password");
   }
 
+  const exp = params.expiresInSeconds ?? 60 * 60; // 1h
+
+  const token = makeJWT(foundUser.id, exp, config.api.secret);
+
   const { hashedPassword, ...safeUser } = foundUser;
 
-  const user: UserResponse = safeUser;
+  const user: UserResponse = safeUser; // needs to think whether we should add token on UserResponse
 
   res.status(200);
-  res.json(user);
+  res.json({
+    ...user,
+    token: token,
+  });
 };

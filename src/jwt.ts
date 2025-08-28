@@ -1,5 +1,5 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { UnauthorizedError } from "./errors/UnauthorizedError";
+import { UnauthorizedError } from "./errors/UnauthorizedError.js";
 
 const TOKEN_ISSUER = "chirpy";
 
