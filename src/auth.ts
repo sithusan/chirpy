@@ -20,7 +20,11 @@ export const getBearerToken = (req: Request) => {
     throw new UnauthorizedError("Invalid JWT");
   }
 
-  const [_, token] = rawToken.split(" ");
+  const splittedToken = rawToken.split(" ");
 
-  return token;
+  if (splittedToken.length < 2 || splittedToken[0] !== "Bearer") {
+    throw new UnauthorizedError("Invalid JWT");
+  }
+
+  return splittedToken[1];
 };
