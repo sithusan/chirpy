@@ -1,19 +1,23 @@
 import { Request, Response } from "express";
 import { BadRequestError } from "../errors/BadRequestError.js";
 import { createUser, findUserBy } from "../db/queries/users.js";
-import { checkPasswordHash, hashPassword } from "./../auth.js";
+import {
+  checkPasswordHash,
+  hashPassword,
+  makeRefreshToken,
+} from "./../auth.js";
 import { User } from "./../db/schema.js";
 import { NotFoundError } from "./../errors/NotFoundError.js";
 import { UnauthorizedError } from "./../errors/UnauthorizedError.js";
 import { makeJWT } from "./../jwt.js";
 import { config } from "./../config.js";
+import { createRefreshToken } from "./../db/queries/refreshTokens.js";
 
 type UserResponse = Omit<User, "hashedPassword">;
 
 type parameter = {
   email: string;
   password: string;
-  expiresInSeconds?: number;
 };
 
 const validateParams = (params: parameter): void => {
@@ -83,9 +87,19 @@ export const handlerLogin = async (
     throw new UnauthorizedError("Incorrect email or password");
   }
 
-  const exp = params.expiresInSeconds ?? 60 * 60; // 1h
+  const JWTExp = 60 * 60; // 1h
+  const token = makeJWT(foundUser.id, JWTExp, config.api.secret);
 
-  const token = makeJWT(foundUser.id, exp, config.api.secret);
+  const refreshToken = makeRefreshToken();
+  const refreshTokenExpDate = new Date();
+  refreshTokenExpDate.setDate(refreshTokenExpDate.getDate() + 60); // 60 Days.
+
+  await createRefreshToken({
+    token: refreshToken,
+    userId: foundUser.id,
+    expiresAt: refreshTokenExpDate,
+    revokedAt: null,
+  });
 
   const { hashedPassword, ...safeUser } = foundUser;
 
@@ -95,5 +109,6 @@ export const handlerLogin = async (
   res.json({
     ...user,
     token: token,
+    refreshToken: refreshToken,
   });
 };

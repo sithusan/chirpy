@@ -12,6 +12,10 @@ import {
   handlerGetChirpBy,
 } from "./handlers/handerChirp.js";
 import { truncateUsers } from "./db/queries/users.js";
+import {
+  handlerRefreshToken,
+  handlerRevokeToken,
+} from "./handlers/handlerRefreshToken.js";
 
 migrate();
 
@@ -132,6 +136,14 @@ app.post("/api/users", async (req, res) => {
 });
 app.post("/api/login", async (req, res) => {
   await handlerLogin(req, res);
+});
+
+app.post("/api/refresh", async (req, res) => {
+  await handlerRefreshToken(req, res);
+});
+
+app.post("/api/revoke", async (req, res) => {
+  await handlerRevokeToken(req, res);
 });
 // Error Handler Middleware needs to defined last.
 // If we don't have the error handler middleware, fallback to express build in handling.
