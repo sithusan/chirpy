@@ -21,6 +21,7 @@ import {
   handlerRefreshToken,
   handlerRevokeToken,
 } from "./handlers/handlerRefreshToken.js";
+import { handlerPolka } from "./handlers/handlerPolka.js";
 
 migrate();
 
@@ -156,6 +157,12 @@ app.post("/api/refresh", async (req, res) => {
 app.post("/api/revoke", async (req, res) => {
   await handlerRevokeToken(req, res);
 });
+
+// web hook
+app.post("/api/polka/webhooks", async (req, res) => {
+  await handlerPolka(req, res);
+});
+
 // Error Handler Middleware needs to defined last.
 // If we don't have the error handler middleware, fallback to express build in handling.
 app.use(errorHander);
