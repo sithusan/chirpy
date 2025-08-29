@@ -31,6 +31,22 @@ export const getBearerToken = (req: Request) => {
   return splittedToken[1];
 };
 
+export const getAPIKey = (req: Request) => {
+  const rawKey = req.get("Authorization");
+
+  if (rawKey === undefined) {
+    throw new UnauthorizedError("Invalid JWT");
+  }
+
+  const splittedToken = rawKey.split(" ");
+
+  if (splittedToken.length < 2 || splittedToken[0] !== "ApiKey") {
+    throw new UnauthorizedError("Invalid ApiKey");
+  }
+
+  return splittedToken[1];
+};
+
 export const makeRefreshToken = (): string => {
   return randomBytes(32).toString("hex");
 };

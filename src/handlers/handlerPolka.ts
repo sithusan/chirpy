@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import { findUserBy, updateUser } from "./../db/queries/users.js";
 import { BadRequestError } from "./../errors/BadRequestError.js";
 import { NotFoundError } from "./../errors/NotFoundError.js";
+import { getAPIKey } from "./../auth.js";
+import { config } from "./../config.js";
+import { UnauthorizedError } from "./../errors/UnauthorizedError.js";
 
 export const handlerPolka = async (req: Request, res: Response) => {
   type parameter = {
@@ -10,6 +13,12 @@ export const handlerPolka = async (req: Request, res: Response) => {
       userId: string;
     };
   };
+
+  const apiKey = getAPIKey(req);
+
+  if (apiKey !== config.api.polkaKey) {
+    throw new UnauthorizedError("Unauthorized");
+  }
 
   const params: parameter = req.body;
 
