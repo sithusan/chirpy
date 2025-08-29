@@ -14,6 +14,7 @@ import {
   handlerCreateChirp,
   handlerGetChirps,
   handlerGetChirpBy,
+  handlerDeleteChirp,
 } from "./handlers/handerChirp.js";
 import { truncateUsers } from "./db/queries/users.js";
 import {
@@ -132,6 +133,9 @@ app.get("/api/chirps/{:id}", async (req, res) => {
 });
 app.post("/api/chirps", async (req, res) => {
   await handlerCreateChirp(req, res);
+});
+app.delete("/api/chirps/{:id}", async (req, res) => {
+  await handlerDeleteChirp(req, res);
 });
 
 // users

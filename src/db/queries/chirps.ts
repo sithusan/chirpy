@@ -23,3 +23,7 @@ export const findChirpBy = async (id: string): Promise<Chirp | undefined> => {
     where: eq(chirps.id, id),
   });
 };
+
+export const deleteChirpBy = async (id: string): Promise<void> => {
+  await db.delete(chirps).where(eq(chirps.id, id));
+};

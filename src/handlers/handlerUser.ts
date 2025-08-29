@@ -13,6 +13,7 @@ import { UnauthorizedError } from "./../errors/UnauthorizedError.js";
 import { makeJWT, validateJWT } from "./../jwt.js";
 import { config } from "./../config.js";
 import { createRefreshToken } from "./../db/queries/refreshTokens.js";
+import { ForbiddenError } from "./../errors/ForbiddenError.js";
 
 type UserResponse = Omit<User, "hashedPassword">;
 
@@ -129,7 +130,7 @@ export const handlerUpdateUser = async (
   const foundUser = await findUserBy("email", params.email);
 
   if (foundUser !== undefined && foundUser.id !== userId) {
-    throw new UnauthorizedError("Unauthorize to update the user");
+    throw new ForbiddenError("Forbidden to update the user");
   }
 
   const { hashedPassword, ...safeUser } = await updateUser(userId, {

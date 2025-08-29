@@ -2,10 +2,17 @@ import { Request, Response } from "express";
 import { BadRequestError } from "../errors/BadRequestError.js";
 import { findUserBy } from "../db/queries/users.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
-import { createChirp, findChirpBy, getChirps } from "../db/queries/chirps.js";
+import {
+  createChirp,
+  deleteChirpBy,
+  findChirpBy,
+  getChirps,
+} from "../db/queries/chirps.js";
 import { getBearerToken } from "./../auth.js";
 import { validateJWT } from "./../jwt.js";
 import { config } from "./../config.js";
+import { ForbiddenError } from "./../errors/ForbiddenError.js";
+import { Chirp } from "src/db/schema.js";
 
 const replaceProfanes = (text: string): string => {
   const profanes = ["kerfuffle", "sharbert", "fornax"];
@@ -20,6 +27,15 @@ const replaceProfanes = (text: string): string => {
   }
 
   return splitted.join(" ");
+};
+
+const findChirpById = async (id: string): Promise<Chirp> => {
+  const chirp = await findChirpBy(id);
+
+  if (chirp === undefined) {
+    throw new NotFoundError("Chirp not found");
+  }
+  return chirp;
 };
 
 export const handlerGetChirps = async (
@@ -38,7 +54,7 @@ export const handlerGetChirpBy = async (
 ): Promise<void> => {
   const id = req.params.id;
 
-  const chirp = await findChirpBy(id);
+  const chirp = await findChirpById(id);
 
   res.status(200);
   res.json(chirp);
@@ -82,4 +98,24 @@ export const handlerCreateChirp = async (
 
   res.status(201);
   res.json(chirp);
+};
+
+export const handlerDeleteChirp = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const token = getBearerToken(req);
+  const userId = validateJWT(token, config.api.secret);
+
+  const id = req.params.id;
+  const chirp = await findChirpById(id);
+
+  if (userId !== chirp.userId) {
+    throw new ForbiddenError("Forbidden to delete the chrip");
+  }
+
+  await deleteChirpBy(chirp.id);
+
+  res.status(204);
+  res.json();
 };
