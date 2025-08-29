@@ -42,7 +42,14 @@ export const handlerGetChirps = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const chirps = await getChirps();
+  let authorId = "";
+  let authorIdQuery = req.query.authorId;
+
+  if (typeof authorIdQuery === "string") {
+    authorId = authorIdQuery;
+  }
+
+  const chirps = await getChirps(authorId);
 
   res.status(200);
   res.json(chirps);

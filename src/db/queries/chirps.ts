@@ -12,9 +12,10 @@ export const createChirp = async (Chirp: NewChirp): Promise<Chirp> => {
   return result;
 };
 
-export const getChirps = async (): Promise<Chirp[]> => {
+export const getChirps = async (authorId: string): Promise<Chirp[]> => {
   return db.query.chirps.findMany({
     orderBy: chirps.createdAt,
+    where: authorId.length > 0 ? eq(chirps.userId, authorId) : undefined,
   });
 };
 
