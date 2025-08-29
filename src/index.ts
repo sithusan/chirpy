@@ -5,7 +5,11 @@ import { ForbiddenError } from "./errors/ForbiddenError.js";
 import { NotFoundError } from "./errors/NotFoundError.js";
 import { UnauthorizedError } from "./errors/UnauthorizedError.js";
 import { migrate } from "./db/migrate.js";
-import { handlerCreateUser, handlerLogin } from "./handlers/handlerUser.js";
+import {
+  handlerCreateUser,
+  handlerLogin,
+  handlerUpdateUser,
+} from "./handlers/handlerUser.js";
 import {
   handlerCreateChirp,
   handlerGetChirps,
@@ -133,6 +137,9 @@ app.post("/api/chirps", async (req, res) => {
 // users
 app.post("/api/users", async (req, res) => {
   await handlerCreateUser(req, res);
+});
+app.put("/api/users", async (req, res) => {
+  await handlerUpdateUser(req, res);
 });
 app.post("/api/login", async (req, res) => {
   await handlerLogin(req, res);

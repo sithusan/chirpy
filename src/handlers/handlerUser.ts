@@ -1,15 +1,16 @@
 import { Request, Response } from "express";
 import { BadRequestError } from "../errors/BadRequestError.js";
-import { createUser, findUserBy } from "../db/queries/users.js";
+import { createUser, findUserBy, updateUser } from "../db/queries/users.js";
 import {
   checkPasswordHash,
+  getBearerToken,
   hashPassword,
   makeRefreshToken,
 } from "./../auth.js";
 import { User } from "./../db/schema.js";
 import { NotFoundError } from "./../errors/NotFoundError.js";
 import { UnauthorizedError } from "./../errors/UnauthorizedError.js";
-import { makeJWT } from "./../jwt.js";
+import { makeJWT, validateJWT } from "./../jwt.js";
 import { config } from "./../config.js";
 import { createRefreshToken } from "./../db/queries/refreshTokens.js";
 
@@ -45,6 +46,7 @@ const validateParams = (params: parameter): void => {
     throw new BadRequestError("password too long");
   }
 };
+
 export const handlerCreateUser = async (
   req: Request,
   res: Response
@@ -111,4 +113,32 @@ export const handlerLogin = async (
     token: token,
     refreshToken: refreshToken,
   });
+};
+
+export const handlerUpdateUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const token = getBearerToken(req);
+  const userId = validateJWT(token, config.api.secret);
+
+  const params: parameter = req.body;
+
+  validateParams(params);
+
+  const foundUser = await findUserBy("email", params.email);
+
+  if (foundUser !== undefined && foundUser.id !== userId) {
+    throw new UnauthorizedError("Unauthorize to update the user");
+  }
+
+  const { hashedPassword, ...safeUser } = await updateUser(userId, {
+    email: params.email,
+    hashedPassword: await hashPassword(params.password),
+  });
+
+  const user: UserResponse = safeUser;
+
+  res.status(200);
+  res.json(user);
 };

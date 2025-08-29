@@ -20,6 +20,19 @@ export const findUserBy = async (
   });
 };
 
+export const updateUser = async (
+  id: string,
+  user: Partial<NewUser>
+): Promise<User> => {
+  const [result] = await db
+    .update(users)
+    .set(user)
+    .where(eq(users.id, id))
+    .returning();
+
+  return result;
+};
+
 export const truncateUsers = async (): Promise<void> => {
   await db.execute("TRUNCATE TABLE users CASCADE;");
 };
