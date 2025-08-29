@@ -49,7 +49,18 @@ export const handlerGetChirps = async (
     authorId = authorIdQuery;
   }
 
-  const chirps = await getChirps(authorId);
+  let sort: "asc" | "desc" = "asc"; // default
+
+  const sortQuery = req.query.sort;
+
+  if (
+    typeof sortQuery === "string" &&
+    (sortQuery.toLowerCase() === "asc" || sortQuery.toLowerCase() === "desc")
+  ) {
+    sort = sortQuery.toLowerCase() as "asc" | "desc";
+  }
+
+  const chirps = await getChirps(authorId, sort);
 
   res.status(200);
   res.json(chirps);
